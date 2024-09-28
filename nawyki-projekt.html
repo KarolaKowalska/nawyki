@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Moje Nawyki</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
+</head>
+
+<style>
+    body {
+        font-family: "Dancing Script", cursive;
+        font-size: 24px;
+        background-image: url("nawyki.jpg");
+        background-size: cover;
+        background-repeat: no-repeat;
+        background-position: center;
+    }
+
+    .nawyk {
+        font-family: "Dancing Script", cursive;
+        display: inline-block;
+        padding: 5px;
+    }
+
+    .cel {
+        font-family: "Dancing Script", cursive;
+        display: inline-block;
+        padding: 5px;
+        margin-left: 10px;
+    }
+
+    .czas {
+        font-family: "Dancing Script", cursive;
+        display: inline-block;
+        padding: 5px;
+        margin-left: 10px;
+    }
+
+    table {
+        font-family: "Dancing Script", cursive;
+        border-collapse: collapse;
+    }
+
+    th {
+        font-family: "Dancing Script", cursive;
+        border: 1px solid #ddd;
+        padding: 8px;
+        text-align: center;
+        background-color: #f2f2f2;
+        width: 20vw;
+        height: 20px;
+        color: rgba(255, 99, 71, 0.8);
+    }
+
+    td {
+        font-family: "Dancing Script", cursive;
+        border: 1px solid #ddd;
+        padding: 8px;
+        text-align: left;
+        width: 200px;
+        height: 20px;
+        text-align: center;
+        color: grey;
+        font-size: 18px;
+    }
+
+    .przycisk {
+        font-family: "Dancing Script", cursive;
+        width: 25px;
+        height: 25px;
+        background-color: rgba(255, 99, 71, 0.2);
+        color: black;
+        border-radius: 5px;
+        border: none;
+        text-align: center;
+    }
+
+    .popup {
+        font-family: "Dancing Script", cursive;
+        position: fixed;
+        top: 30%;
+        left: 32%;
+        background-color: #fff;
+        border: 1px solid black;
+        width: 600px;
+        height: 80px;
+        text-align: center;
+        padding-top: 40px;
+    }
+
+    h2 {
+        text-align: center;
+        font-size: 80px;
+        color: rgba(255, 99, 71, 1);
+    }
+
+    #powitanie {
+        margin: 10px;
+        color: rgba(255, 99, 71, 0.8);
+        text-align: center;
+    }
+
+    .input {
+        width: 30vw;
+        height: 30px;
+        text-align: center;
+        font-family: "Dancing Script", cursive;
+        font-size: 20px;
+    }
+</style>
+
+<body>
+
+    <h2>✨ Moje nawyki ✨</h2>
+
+    <div id="powitanie">
+        Oto Twój pomocnik w monitorowaniu nawyków. <br>
+        Wpisz swój nawyk, określ cel i czas na jego realizację. <br>
+        Zwiększaj lub zmniejszaj postęp w realizacji swojego celu. <br>
+        W każdej chwili możesz dodać nowy nawyk oraz usunąć ten już przez Ciebie wpisany. <br> <br>
+        Buduj swoje nawyki każdego dnia! <br>
+        Powodzenia! <br>
+    </div>
+    <br>
+    <br>
+
+    <input type="text" id="nawyk" class="input" placeholder="Nowy nawyk">
+    <input type="text" id="cel" class="input"placeholder="Cel">
+    <input type="text" id="czas" class="input"placeholder="Czas">
+    <button onclick="dodajNawyk()">Dodaj</button>
+    <div id="listaNawykow"></div>
+    <br>
+    <table>
+        <thead>
+            <tr>
+                <th>✨ Nawyk</th>
+                <th>🎯 Cel</th>
+                <th>⏱ Czas</th>
+                <th>📣 Realizacja</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody id="tabelaNawykow"></tbody>
+    </table>
+
+    <script>
+        const listaNawykowElement = document.getElementById('listaNawykow');
+        let nawyki = [];
+        const starenawyki = window.localStorage.getItem("nawyki");
+
+        if (starenawyki) {
+            nawyki = JSON.parse(starenawyki);
+        }
+
+        function dodajNawyk() {
+            const nowyNawyk = document.getElementById('nawyk').value;
+            const nowyCel = document.getElementById('cel').value;
+            const czas = document.getElementById('czas').value;
+
+            nawyki.push({
+                nazwa: nowyNawyk,
+                cel: nowyCel,
+                czas: czas,
+                realizacja: 0
+            });
+
+            wyswietlListeNawykow();
+            document.getElementById('nawyk').value = '';
+            document.getElementById('cel').value = '';
+            document.getElementById('czas').value = '';
+            zapisz()
+        }
+
+        function wyswietlListeNawykow() {
+            const tabela = document.getElementById('tabelaNawykow');
+            tabela.innerHTML = '';
+
+            nawyki.forEach((nawyk, index) => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+            <td>${nawyk.nazwa}</td>
+            <td>${nawyk.cel}</td>
+            <td>${nawyk.czas}</td> 
+            <td>
+            <span id="realizacja-${index}">${nawyk.realizacja}</span>
+            <button class="przycisk" onclick="zwiekszRealizacje(${index})">+</button>
+            <button class="przycisk" onclick="zmniejszRealizacje(${index})">-</button>
+            </td>
+            <td>
+            <button onclick="usunNawyk(${index})">Usuń nawyk</button>
+            </td>
+              `;
+
+                tabela.appendChild(tr);
+
+            });
+        }
+
+        function zwiekszRealizacje(index) {
+            nawyki[index].realizacja++;
+            zapisz()
+            const realizacjaZwiekszanie = document.getElementById(`realizacja-${index}`);
+            realizacjaZwiekszanie.textContent = nawyki[index].realizacja;
+
+            if (nawyki[index].realizacja === parseInt(nawyki[index].cel)) {
+                wyswietlPopupRowne(nawyki[index].nazwa);
+            } else if (nawyki[index].realizacja > parseInt(nawyki[index].cel)) {
+                wyswietlPopupWieksze(nawyki[index].nazwa);
+            }
+        }
+
+        function zmniejszRealizacje(index) {
+            nawyki[index].realizacja--;
+            zapisz()
+            const realizacjaZmniejszenie = document.getElementById(`realizacja-${index}`);
+            realizacjaZmniejszenie.textContent = nawyki[index].realizacja;
+
+            if (nawyki[index].realizacja === parseInt(nawyki[index].cel)) {
+                wyswietlPopupRowne(nawyki[index].nazwa);
+            } else if (nawyki[index].realizacja > parseInt(nawyki[index].cel)) {
+                wyswietlPopupWieksze(nawyki[index].nazwa);
+            }
+        }
+
+        function wyswietlPopupRowne(nawyk) {
+            const popup = document.createElement('div');
+            popup.classList.add('popup');
+            popup.textContent = `🎉 Gratulacje! Osiągnąłeś cel dla nawyku "${nawyk}"! 🎉`;
+            document.body.appendChild(popup);
+
+            document.addEventListener('keydown', function (event) {
+                if (event.key == 'Escape') {
+                    popup.remove();
+                }
+            });
+        }
+
+        function wyswietlPopupWieksze(nawyk) {
+            const popup = document.createElement('div');
+            popup.classList.add('popup');
+            popup.textContent = `🎉 Przekroczyłeś cel "${nawyk}"! Trzymaj tak dalej! 🎉`;
+            document.body.appendChild(popup);
+
+            document.addEventListener('keydown', function (event) {
+                if (event.key == 'Escape') {
+                    popup.remove();
+                }
+            });
+        }
+
+        function zapisz() {
+            window.localStorage.setItem("nawyki", JSON.stringify(nawyki))
+        }
+
+        wyswietlListeNawykow()
+
+        function usunNawyk(index) {
+            nawyki.splice(index, 1);
+            wyswietlListeNawykow();
+            zapisz();
+        }
+
+
+    </script>
+</body>
+
+</html>
