@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Moje Nawyki</title>
+</head>
+
+<style>
+
+
+    .nawyk {
+        display: inline-block;
+        padding: 5px;
+    }
+
+    .cel {
+        display: inline-block;
+        padding: 5px;
+        margin-left: 10px;
+    }
+
+    .czas {
+        display: inline-block;
+        padding: 5px;
+        margin-left: 10px;
+    }
+
+    table {
+        border-collapse: collapse;
+    }
+
+    th {
+        border: 1px solid #ddd;
+        padding: 8px;
+        text-align: center;
+        background-color: #f2f2f2;
+        width: 20vw;
+        height: 20px;
+    }
+
+    td {
+        border: 1px solid #ddd;
+        padding: 8px;
+        text-align: left;
+        width: 200px;
+        height: 20px;
+    }
+
+    #przycisk {
+        width: 25px;
+        height: 25px;
+        background-color: lightgrey;
+        color: white;
+        border-radius: 5px;
+        border: none;
+        text-align: center;
+    }
+
+    #pasek {
+        background-color: rgb(202, 223, 237);
+    }
+
+    #postep {
+        height: 100%;
+        background-color: blue;
+        width: 0%;
+        transition-property: width;
+        transition-duration: 1s;
+        transition-timing-function: ease-in-out;
+    }
+
+    .popup {
+        position: fixed;
+        top: 20%;
+        left: 40%;
+        background-color: #fff;
+        border: 1px solid black;
+        width: 400px;
+        height: 60px;
+        text-align: center;
+        padding-top: 30px;
+    }
+
+    h2 {
+        text-align: center;
+    }
+</style>
+
+<body>
+
+    <h2><i>Moje nawyki</i></h2>
+
+    <input type="text" id="nawyk" placeholder="Nowy nawyk">
+    <input type="text" id="cel" placeholder="Cel">
+    <input type="text" id="czas" placeholder="Czas">
+    <button onclick="dodajNawyk()">Dodaj</button>
+    <div id="listaNawykow"></div>
+    <br>
+    <table>
+        <thead>
+            <tr>
+                <th>Nawyk</th>
+                <th>Cel</th>
+                <th>Czas</th>
+                <th>Realizacja</th>
+                <th>Postęp</th>
+            </tr>
+        </thead>
+        <tbody id="tabelaNawykow"></tbody>
+    </table>
+
+    <script>
+        const listaNawykowElement = document.getElementById('listaNawykow');
+        let nawyki = [];
+        const starenawyki = window.localStorage.getItem("nawyki");
+
+        if (starenawyki) {
+            nawyki = JSON.parse(starenawyki);
+        }
+
+        function dodajNawyk() {
+            const nowyNawyk = document.getElementById('nawyk').value;
+            const nowyCel = document.getElementById('cel').value;
+            const czas = document.getElementById('czas').value;
+
+            nawyki.push({
+                nazwa: nowyNawyk,
+                cel: nowyCel,
+                czas: czas,
+                realizacja: 0
+            });
+
+            wyswietlListeNawykow();
+            document.getElementById('nawyk').value = '';
+            document.getElementById('cel').value = '';
+            document.getElementById('czas').value = '';
+            zapisz()
+        }
+
+        function wyswietlListeNawykow() {
+            const tabela = document.getElementById('tabelaNawykow');
+            tabela.innerHTML = '';
+
+            nawyki.forEach((nawyk, index) => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+            <td>${nawyk.nazwa}</td>
+            <td>${nawyk.cel}</td>
+            <td>${nawyk.czas}</td> 
+            <td>
+            <span id="realizacja-${index}">${nawyk.realizacja}</span>
+            <button id="przycisk" onclick="zwiekszRealizacje(${index})">+</button>
+            </td>
+            <td id="pasek">
+                <div id="postep"></div>
+            </td>
+              `;
+
+                tabela.appendChild(tr);
+
+            });
+        }
+
+        function zwiekszRealizacje(index) {
+            nawyki[index].realizacja++;
+            zapisz()
+            const realizacjaZwiekszanie = document.getElementById(`realizacja-${index}`);
+            realizacjaZwiekszanie.textContent = nawyki[index].realizacja;
+
+            if (nawyki[index].realizacja === parseInt(nawyki[index].cel)) {
+                wyswietlPopup(nawyki[index].nazwa);
+            }
+        }
+
+        function wyswietlPopup(nawyk) {
+            const popup = document.createElement('div');
+            popup.classList.add('popup');
+            popup.textContent = `Gratulacje! Osiągnąłeś cel dla nawyku "${nawyk}"!`;
+            document.body.appendChild(popup);
+
+            document.addEventListener('keydown', function(event) {
+            if (event.key == 'Escape') {
+            popup.remove();
+            }});
+        }
+
+        function zapisz() {
+            window.localStorage.setItem("nawyki", JSON.stringify(nawyki))
+        }
+
+        wyswietlListeNawykow()
+
+    </script>
+</body>
+
+</html>
